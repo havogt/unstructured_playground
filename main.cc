@@ -284,7 +284,7 @@ template <typename Vec> void diff_explicit(Vec &temperature, grid const &g) {
   using namespace ranges;
   std::vector<std::size_t> cell_ids = view::ints(0) | view::take(g.n_cells());
 
-  double alpha = 0.5;
+  double alpha = 0.1;
 
   Vec tmp(temperature.size());
 
@@ -294,7 +294,6 @@ template <typename Vec> void diff_explicit(Vec &temperature, grid const &g) {
   }
 
   for (std::size_t timestep = 0; timestep < 100; ++timestep) {
-    std::cout << timestep << std::endl;
     for (auto cell : cell_ids) {
       // auto neighs = g.c2c(cell);
       auto neighs = cashed_c2c[cell];
@@ -304,10 +303,7 @@ template <typename Vec> void diff_explicit(Vec &temperature, grid const &g) {
         new_val += alpha * temperature[n];
       }
       tmp[cell] = new_val;
-      if (cell % 1000 == 0)
-        std::cout << cell << std::endl;
     }
-
     write_vtk("diff_" + std::to_string(timestep) + ".vtk", g, tmp);
     std::swap(temperature, tmp);
   }
@@ -339,20 +335,20 @@ int main() {
             << std::endl;
 
   grid g_tmp(Nx, Ny);
-  auto cells = g_tmp.e2c(14);
+  auto cells = g_tmp.e2c(18);
   for (auto c : cells) {
     std::cout << c << " ";
   }
   std::cout << "\n-----------" << std::endl;
 
-  auto cells2 = g_tmp.c2c(2);
+  auto cells2 = g_tmp.c2c(11);
   for (auto c : cells2) {
     std::cout << c << " ";
   }
   std::cout << "\n-----------" << std::endl;
 
   grid g(100, 100);
-  std::vector<double> data(g.n_cells(), 1);
+  std::vector<double> data(g.n_cells());
   init_cells_with_gauss(0.01, g, data);
 
   diff_explicit(data, g);
